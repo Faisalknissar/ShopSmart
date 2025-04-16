@@ -7,11 +7,11 @@ import UserProfile from "./user-profile";
 import { useEffect, useState } from "react";
 import { createClient } from "../../supabase/client";
 import { usePathname } from "next/navigation";
+import ProductDropdown from "./product-dropdown";
 
 export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -22,13 +22,6 @@ export default function Navbar() {
         data: { user },
       } = await supabase.auth.getUser();
       setUser(user);
-
-      // In a real app, you would check if the user has admin role
-      // For now, we'll just simulate this check
-      if (user) {
-        setIsAdmin(true); // This should be based on user role in a real app
-      }
-
       setLoading(false);
     };
 
@@ -36,11 +29,11 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/products", label: "Products" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
-    { href: "/testimonials", label: "Testimonials" },
+    { href: "/", label: "HOME" },
+    { href: "/about", label: "ABOUT" },
+    { isDropdown: true, label: "PRODUCTS" },
+    { href: "/testimonials", label: "TESTIMONIAL" },
+    { href: "/contact", label: "CONTACT US" },
   ];
 
   return (
@@ -54,15 +47,19 @@ export default function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium ${pathname === link.href ? "text-blue-600" : "text-gray-700 hover:text-blue-600"}`}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {navLinks.map((link, index) =>
+              link.isDropdown ? (
+                <ProductDropdown key={index} />
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-medium ${pathname === link.href ? "text-blue-600" : "text-gray-700 hover:text-blue-600"}`}
+                >
+                  {link.label}
+                </Link>
+              ),
+            )}
           </div>
 
           {/* Right side buttons */}
@@ -78,13 +75,6 @@ export default function Navbar() {
               <>
                 {user ? (
                   <div className="flex items-center space-x-4">
-                    {isAdmin && (
-                      <Link href="/admin">
-                        <Button variant="outline" size="sm">
-                          Admin Panel
-                        </Button>
-                      </Link>
-                    )}
                     <Link href="/dashboard">
                       <Button variant="outline" size="sm">
                         Dashboard
@@ -122,16 +112,48 @@ export default function Navbar() {
         {mobileMenuOpen && (
           <div className="md:hidden pt-4 pb-3 border-t mt-3">
             <div className="flex flex-col space-y-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium px-3 py-2 rounded-md ${pathname === link.href ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-50"}`}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
+              {navLinks.map((link, index) =>
+                link.isDropdown ? (
+                  <div key={index} className="px-3 py-2">
+                    <div className="font-medium mb-2">PRODUCTS</div>
+                    <div className="pl-4 flex flex-col space-y-2">
+                      <Link
+                        href="/products?category=electronics"
+                        className="text-sm text-gray-600 hover:text-blue-600"
+                      >
+                        Electronics
+                      </Link>
+                      <Link
+                        href="/products?category=watches"
+                        className="text-sm text-gray-600 hover:text-blue-600"
+                      >
+                        Watches
+                      </Link>
+                      <Link
+                        href="/products?category=jewelry"
+                        className="text-sm text-gray-600 hover:text-blue-600"
+                      >
+                        Jewelry
+                      </Link>
+                      <Link
+                        href="/products?category=clothing"
+                        className="text-sm text-gray-600 hover:text-blue-600"
+                      >
+                        Clothing
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`text-sm font-medium px-3 py-2 rounded-md ${pathname === link.href ? "bg-blue-50 text-blue-600" : "text-gray-700 hover:bg-gray-50"}`}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ),
+              )}
 
               {!user && (
                 <div className="flex flex-col space-y-2 pt-2 border-t">

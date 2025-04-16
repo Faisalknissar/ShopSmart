@@ -7,25 +7,41 @@ import { createClient } from "../../supabase/server";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const fullName = formData.get("full_name")?.toString() || '';
+  const fullName = formData.get("full_name")?.toString() || "";
+  const phone = formData.get("phone")?.toString();
   const supabase = await createClient();
 
-  if (!email || !password) {
+  if (!email || !password || !phone) {
     return encodedRedirect(
       "error",
       "/sign-up",
-      "Email and password are required",
+      "Email, phone number, and password are required",
     );
   }
 
-  const { data: { user }, error } = await supabase.auth.signUp({
+  // Validate phone number format (basic validation)
+  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
+  if (!phoneRegex.test(phone)) {
+    return encodedRedirect(
+      "error",
+      "/sign-up",
+      "Please enter a valid phone number with country code (e.g., +1234567890)",
+    );
+  }
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
         full_name: fullName,
         email: email,
-      }
+        phone: phone,
+        user_type: "user", // Default user type
+      },
     },
   });
 
@@ -35,17 +51,16 @@ export const signUpAction = async (formData: FormData) => {
 
   if (user) {
     try {
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .insert({
-          id: user.id,
-          user_id: user.id,
-          name: fullName,
-          email: email,
-          token_identifier: user.id,
-          created_at: new Date().toISOString()
-        });
+      const { error: updateError } = await supabase.from("users").insert({
+        id: user.id,
+        user_id: user.id,
+        name: fullName,
+        email: email,
+        phone: phone,
+        user_type: "user",
+        token_identifier: user.id,
+        created_at: new Date().toISOString(),
+      });
 
       if (updateError) {
         // Error handling without console.error
@@ -73,20 +88,100 @@ export const signUpAction = async (formData: FormData) => {
 };
 
 export const signInAction = async (formData: FormData) => {
-  const email = formData.get("email") as string;
+  const identifier = formData.get("identifier") as string;
   const password = formData.get("password") as string;
+  const otp = formData.get("otp") as string;
+  const useOtp = formData.get("useOtp") as string;
+  const redirectTo = (formData.get("redirect") as string) || "/dashboard";
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+  // Check if identifier is an email or phone number
+  const isEmail = identifier.includes("@");
+  const isPhone = /^\+?[1-9]\d{1,14}$/.test(identifier);
+
+  if (!isEmail && !isPhone) {
+    return encodedRedirect(
+      "error",
+      "/sign-in",
+      "Please enter a valid email or phone number",
+    );
+  }
+
+  // If using OTP and we have an OTP code, verify it
+  if (useOtp && otp) {
+    const { error, data } = await supabase.auth.verifyOtp({
+      phone: isPhone ? identifier : undefined,
+      email: isEmail ? identifier : undefined,
+      token: otp,
+      type: "sms",
+    });
+
+    if (error) {
+      return encodedRedirect("error", "/sign-in", error.message);
+    }
+
+    // Check if user is an admin
+    if (redirectTo.includes("/admin")) {
+      return redirect("/admin");
+    }
+
+    return redirect(redirectTo);
+  }
+
+  // Regular password login
+  if (!useOtp && password) {
+    const { error, data } = await supabase.auth.signInWithPassword({
+      email: isEmail ? identifier : undefined,
+      phone: isPhone ? identifier : undefined,
+      password,
+    });
+
+    if (error) {
+      return encodedRedirect("error", "/sign-in", error.message);
+    }
+
+    // Check if user is an admin
+    if (redirectTo.includes("/admin")) {
+      return redirect("/admin");
+    }
+
+    return redirect(redirectTo);
+  }
+
+  return encodedRedirect("error", "/sign-in", "Invalid login attempt");
+};
+
+export const requestOtpAction = async (formData: FormData) => {
+  const identifier = formData.get("identifier") as string;
+  const supabase = await createClient();
+
+  // Check if identifier is an email or phone number
+  const isEmail = identifier.includes("@");
+  const isPhone = /^\+?[1-9]\d{1,14}$/.test(identifier);
+
+  if (!isEmail && !isPhone) {
+    return encodedRedirect(
+      "error",
+      "/sign-in",
+      "Please enter a valid email or phone number",
+    );
+  }
+
+  // Send OTP via SMS or Email
+  const { error } = await supabase.auth.signInWithOtp({
+    phone: isPhone ? identifier : undefined,
+    email: isEmail ? identifier : undefined,
   });
 
   if (error) {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/dashboard");
+  return encodedRedirect(
+    "success",
+    "/sign-in",
+    `Verification code sent to ${isEmail ? "your email" : "your phone"}. Please enter it to sign in.`,
+  );
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -166,10 +261,10 @@ export const checkUserSubscription = async (userId: string) => {
   const supabase = await createClient();
 
   const { data: subscription, error } = await supabase
-    .from('subscriptions')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('status', 'active')
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "active")
     .single();
 
   if (error) {

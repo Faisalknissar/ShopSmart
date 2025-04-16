@@ -6,8 +6,15 @@ import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 import ProductImageCarousel from "@/components/product/ProductImageCarousel";
 import ProductImageLightbox from "@/components/product/ProductImageLightbox";
+import ReviewModal from "@/components/product/ReviewModal";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Star, StarHalf } from "lucide-react";
+import {
+  ShoppingCart,
+  Star,
+  StarHalf,
+  ThumbsUp,
+  ThumbsDown,
+} from "lucide-react";
 
 // Mock product data - in a real app, this would come from your database
 const mockProducts = [
@@ -82,6 +89,7 @@ export default function ProductDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
 
   useEffect(() => {
     // In a real app, fetch product data from your API/database
@@ -221,12 +229,210 @@ export default function ProductDetailsPage() {
           onOpenChange={setLightboxOpen}
         />
 
-        {/* Reviews section will be added in the next implementation */}
+        <ReviewModal open={reviewModalOpen} onOpenChange={setReviewModalOpen} />
+
+        {/* Reviews section */}
         <div id="reviews" className="border-t pt-8 mt-8">
           <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
-          <p className="text-gray-500">
-            Review section will be implemented in the next phase.
-          </p>
+
+          <div className="bg-white rounded-lg p-6 mb-8">
+            <div className="flex flex-col md:flex-row gap-8">
+              {/* Rating Summary */}
+              <div className="md:w-1/3">
+                <div className="text-center md:text-left">
+                  <div className="text-5xl font-bold text-gray-800 mb-2">
+                    4.8
+                  </div>
+                  <div className="flex justify-center md:justify-start mb-2">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className="h-5 w-5 text-yellow-400 fill-current"
+                      />
+                    ))}
+                  </div>
+                  <div className="text-sm text-gray-500 mb-4">763 Reviews</div>
+
+                  <button
+                    onClick={() => setReviewModalOpen(true)}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                  >
+                    Write A Review
+                  </button>
+                </div>
+              </div>
+
+              {/* Rating Breakdown */}
+              <div className="md:w-2/3">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <div key={rating} className="flex items-center mb-2">
+                    <div className="w-8 text-right mr-2">{rating}</div>
+                    <Star className="h-4 w-4 text-yellow-400 fill-current mr-2" />
+                    <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-yellow-400"
+                        style={{
+                          width:
+                            rating === 5
+                              ? "80%"
+                              : rating === 4
+                                ? "15%"
+                                : rating === 3
+                                  ? "3%"
+                                  : rating === 2
+                                    ? "1%"
+                                    : "0.5%",
+                        }}
+                      ></div>
+                    </div>
+                    <div className="w-10 text-right ml-2 text-sm text-gray-500">
+                      {rating === 5
+                        ? "629"
+                        : rating === 4
+                          ? "116"
+                          : rating === 3
+                            ? "13"
+                            : rating === 2
+                              ? "3"
+                              : "2"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Sort Controls */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="text-lg font-semibold">Product Reviews</div>
+            <div className="flex items-center">
+              <span className="text-sm text-gray-500 mr-2">sort by:</span>
+              <select className="text-sm border-none bg-transparent focus:outline-none">
+                <option>Most recent</option>
+                <option>Highest rated</option>
+                <option>Lowest rated</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Individual Reviews */}
+          <div className="space-y-8">
+            {/* Review 1 */}
+            <div className="border-b pb-8">
+              <div className="flex items-start mb-4">
+                <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center text-gray-700 font-semibold mr-4">
+                  R
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                    <div>
+                      <div className="flex mb-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 text-yellow-400 fill-current"
+                          />
+                        ))}
+                      </div>
+                      <h4 className="font-semibold">Thanks to Emma 😊 😊</h4>
+                    </div>
+                    <div className="text-sm text-gray-500 mt-1 sm:mt-0">
+                      09/01/24
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-sm font-medium">Rajagopala...</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Verified Buyer, Side sleeper
+                    </span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Chennai, Tamil Nadu
+                    </span>
+                  </div>
+                  <p className="text-gray-700 mb-3">
+                    We've bought Emma Hybrid mattress, 6.5'6 (10"). We've chosen
+                    10" based on our body weight, these guide info not available
+                    in Emma website. If they add its good.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Was this review helpful?
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button className="flex items-center text-sm text-gray-700">
+                        <ThumbsUp className="h-4 w-4 mr-1" /> 57
+                      </button>
+                      <button className="flex items-center text-sm text-gray-700">
+                        <ThumbsDown className="h-4 w-4 mr-1" /> 21
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className="border-b pb-8">
+              <div className="flex items-start mb-4">
+                <div className="bg-gray-200 rounded-full w-12 h-12 flex items-center justify-center text-gray-700 font-semibold mr-4">
+                  S
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                    <div>
+                      <div className="flex mb-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className="h-4 w-4 text-yellow-400 fill-current"
+                          />
+                        ))}
+                      </div>
+                      <h4 className="font-semibold">Simply super</h4>
+                    </div>
+                    <div className="text-sm text-gray-500 mt-1 sm:mt-0">
+                      08/13/24
+                    </div>
+                  </div>
+                  <div className="mb-2">
+                    <span className="text-sm font-medium">Shankar E.</span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Verified Buyer, Back sleeper
+                    </span>
+                    <span className="text-xs text-gray-500 ml-2">
+                      Changanacherry, Kottayam, Kerala
+                    </span>
+                  </div>
+                  <p className="text-gray-700 mb-3">
+                    Emma mattress is simply super. Experience it, feel it. I
+                    brought 1 king size and 3 queen size mattresses a couple of
+                    months back, and we are getting good sleep, no stress, no
+                    body pain.
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-500">
+                      Was this review helpful?
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button className="flex items-center text-sm text-gray-700">
+                        <ThumbsUp className="h-4 w-4 mr-1" /> 42
+                      </button>
+                      <button className="flex items-center text-sm text-gray-700">
+                        <ThumbsDown className="h-4 w-4 mr-1" /> 5
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Load More Button */}
+            <div className="text-center">
+              <button className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                Load More Reviews
+              </button>
+            </div>
+          </div>
         </div>
       </main>
 

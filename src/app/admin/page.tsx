@@ -11,6 +11,8 @@ import {
   Package,
   LayoutGrid,
   BarChart3,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -76,7 +78,7 @@ export default function AdminDashboard() {
     { id: 5, name: "Beauty", productCount: 12 },
   ]);
 
-  // Check if user is admin
+  // Check if user is authenticated and admin
   useEffect(() => {
     const checkAdmin = async () => {
       const {
@@ -84,7 +86,7 @@ export default function AdminDashboard() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        router.push("/sign-in");
+        router.push("/sign-in?redirect=/admin");
         return;
       }
 
@@ -99,19 +101,23 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading admin dashboard...</p>
+        </div>
       </div>
     );
   }
 
   if (!isAdmin) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center">
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
           <p className="text-gray-600 mb-6">
-            You do not have permission to access this page.
+            You do not have permission to access the admin dashboard.
           </p>
           <button
             onClick={() => router.push("/")}
@@ -126,9 +132,9 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <div className="flex">
+      <div className="flex flex-col md:flex-row">
         {/* Sidebar */}
-        <div className="w-64 bg-white h-screen shadow-md fixed">
+        <div className="w-full md:w-64 bg-white shadow-md md:h-screen md:fixed">
           <div className="p-6 border-b">
             <h1 className="text-xl font-bold">Admin Dashboard</h1>
           </div>
@@ -167,7 +173,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Main Content */}
-        <div className="ml-64 flex-1 p-8">
+        <div className="md:ml-64 flex-1 p-4 md:p-8">
           <Tabs defaultValue="products">
             <TabsList className="mb-8">
               <TabsTrigger value="products">Products</TabsTrigger>
@@ -186,74 +192,76 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Product
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Price
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Stock
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {products.map((product) => (
-                      <tr key={product.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="h-10 w-10 flex-shrink-0">
-                              <img
-                                className="h-10 w-10 rounded-full object-cover"
-                                src={product.image}
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {product.name}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Product
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Price
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Stock
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {products.map((product) => (
+                        <tr key={product.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="h-10 w-10 flex-shrink-0">
+                                <img
+                                  className="h-10 w-10 rounded-full object-cover"
+                                  src={product.image}
+                                  alt=""
+                                />
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {product.name}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {product.category}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            ${product.price.toFixed(2)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {product.stock}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex gap-2">
-                            <button className="text-blue-600 hover:text-blue-900">
-                              <Edit size={18} />
-                            </button>
-                            <button className="text-red-600 hover:text-red-900">
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {product.category}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              ${product.price.toFixed(2)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {product.stock}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex gap-2">
+                              <button className="text-blue-600 hover:text-blue-900">
+                                <Edit size={18} />
+                              </button>
+                              <button className="text-red-600 hover:text-red-900">
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </TabsContent>
 
@@ -268,47 +276,49 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Products
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {categories.map((category) => (
-                      <tr key={category.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {category.name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {category.productCount}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex gap-2">
-                            <button className="text-blue-600 hover:text-blue-900">
-                              <Edit size={18} />
-                            </button>
-                            <button className="text-red-600 hover:text-red-900">
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Category Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Products
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {categories.map((category) => (
+                        <tr key={category.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {category.name}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {category.productCount}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex gap-2">
+                              <button className="text-blue-600 hover:text-blue-900">
+                                <Edit size={18} />
+                              </button>
+                              <button className="text-red-600 hover:text-red-900">
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </TabsContent>
 

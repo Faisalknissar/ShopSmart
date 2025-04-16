@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -59,9 +59,12 @@ export default function ProductImageCarousel({
   };
 
   // Register onSelect event
-  if (emblaApi && !emblaApi.hasRegisteredCallback("select", onSelect)) {
+  useEffect(() => {
+    if (!emblaApi) return;
+
     emblaApi.on("select", onSelect);
-  }
+    return () => emblaApi.off("select", onSelect);
+  }, [emblaApi, onSelect]);
 
   if (!images || images.length === 0) {
     return (
