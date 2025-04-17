@@ -9,12 +9,14 @@ export const signUpAction = async (formData: FormData) => {
   const password = formData.get("password")?.toString();
   const fullName = formData.get("full_name")?.toString() || "";
   const phone = formData.get("phone")?.toString();
+  const userType = formData.get("user_type")?.toString() || "user"; // Get user_type from form, default to 'user'
+  const isAdminSignup = userType === "admin";
   const supabase = await createClient();
 
   if (!email || !password || !phone) {
     return encodedRedirect(
       "error",
-      "/sign-up",
+      isAdminSignup ? "/admin/signup" : "/sign-up",
       "Email, phone number, and password are required",
     );
   }
@@ -24,7 +26,7 @@ export const signUpAction = async (formData: FormData) => {
   if (!phoneRegex.test(phone)) {
     return encodedRedirect(
       "error",
-      "/sign-up",
+      isAdminSignup ? "/admin/signup" : "/sign-up",
       "Please enter a valid phone number with country code (e.g., +1234567890)",
     );
   }
@@ -40,13 +42,17 @@ export const signUpAction = async (formData: FormData) => {
         full_name: fullName,
         email: email,
         phone: phone,
-        user_type: "user", // Default user type
+        user_type: userType, // Use the provided user_type
       },
     },
   });
 
   if (error) {
-    return encodedRedirect("error", "/sign-up", error.message);
+    return encodedRedirect(
+      "error",
+      isAdminSignup ? "/admin/signup" : "/sign-up",
+      error.message,
+    );
   }
 
   if (user) {
@@ -57,7 +63,7 @@ export const signUpAction = async (formData: FormData) => {
         name: fullName,
         email: email,
         phone: phone,
-        user_type: "user",
+        user_type: userType, // Use the provided user_type
         token_identifier: user.id,
         created_at: new Date().toISOString(),
       });
@@ -66,7 +72,7 @@ export const signUpAction = async (formData: FormData) => {
         // Error handling without console.error
         return encodedRedirect(
           "error",
-          "/sign-up",
+          isAdminSignup ? "/admin/signup" : "/sign-up",
           "Error updating user. Please try again.",
         );
       }
@@ -74,15 +80,16 @@ export const signUpAction = async (formData: FormData) => {
       // Error handling without console.error
       return encodedRedirect(
         "error",
-        "/sign-up",
+        isAdminSignup ? "/admin/signup" : "/sign-up",
         "Error updating user. Please try again.",
       );
     }
   }
 
+  // Redirect to appropriate page based on user type
   return encodedRedirect(
     "success",
-    "/sign-up",
+    isAdminSignup ? "/admin/login" : "/sign-up",
     "Thanks for signing up! Please check your email for a verification link.",
   );
 };
@@ -93,6 +100,7 @@ export const signInAction = async (formData: FormData) => {
   const otp = formData.get("otp") as string;
   const useOtp = formData.get("useOtp") as string;
   const redirectTo = (formData.get("redirect") as string) || "/dashboard";
+  const isAdminLogin = redirectTo.includes("/admin");
   const supabase = await createClient();
 
   // Check if identifier is an email or phone number
@@ -102,7 +110,7 @@ export const signInAction = async (formData: FormData) => {
   if (!isEmail && !isPhone) {
     return encodedRedirect(
       "error",
-      "/sign-in",
+      isAdminLogin ? "/admin/login" : "/sign-in",
       "Please enter a valid email or phone number",
     );
   }
@@ -117,11 +125,29 @@ export const signInAction = async (formData: FormData) => {
     });
 
     if (error) {
-      return encodedRedirect("error", "/sign-in", error.message);
+      return encodedRedirect(
+        "error",
+        isAdminLogin ? "/admin/login" : "/sign-in",
+        error.message,
+      );
     }
 
-    // Check if user is an admin
-    if (redirectTo.includes("/admin")) {
+    // If this is an admin login, check if user has admin privileges
+    if (isAdminLogin && data.user) {
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("user_type")
+        .eq("id", data.user.id)
+        .single();
+
+      if (userError || (userData && userData.user_type !== "admin")) {
+        return encodedRedirect(
+          "error",
+          "/admin/login",
+          "You do not have admin privileges",
+        );
+      }
+
       return redirect("/admin");
     }
 
@@ -137,18 +163,42 @@ export const signInAction = async (formData: FormData) => {
     });
 
     if (error) {
-      return encodedRedirect("error", "/sign-in", error.message);
+      return encodedRedirect(
+        "error",
+        isAdminLogin ? "/admin/login" : "/sign-in",
+        error.message,
+      );
     }
 
-    // Check if user is an admin
-    if (redirectTo.includes("/admin")) {
+    // If this is an admin login, check if user has admin privileges
+    if (isAdminLogin && data.user) {
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("user_type")
+        .eq("id", data.user.id)
+        .single();
+
+      if (userError || (userData && userData.user_type !== "admin")) {
+        // Sign out the user if they're not an admin
+        await supabase.auth.signOut();
+        return encodedRedirect(
+          "error",
+          "/admin/login",
+          "You do not have admin privileges",
+        );
+      }
+
       return redirect("/admin");
     }
 
     return redirect(redirectTo);
   }
 
-  return encodedRedirect("error", "/sign-in", "Invalid login attempt");
+  return encodedRedirect(
+    "error",
+    isAdminLogin ? "/admin/login" : "/sign-in",
+    "Invalid login attempt",
+  );
 };
 
 export const requestOtpAction = async (formData: FormData) => {

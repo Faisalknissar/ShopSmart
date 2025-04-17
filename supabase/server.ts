@@ -17,7 +17,6 @@ export const createClient = async () => {
             }));
           } catch (error) {
             // If cookies() is called in an environment where it's not allowed
-            console.error("Error accessing cookies:", error);
             return [];
           }
         },
@@ -28,7 +27,7 @@ export const createClient = async () => {
             });
           } catch (error) {
             // If cookies() is called in an environment where it's not allowed
-            console.error("Error setting cookies:", error);
+            // Silent fail - don't log errors that might cause header issues
           }
         },
       },

@@ -47,7 +47,8 @@ export default function ProductDropdown() {
 
       {isOpen && (
         <div
-          className="absolute left-0 right-0 mt-1 w-screen bg-white shadow-lg z-50 border-t border-gray-200"
+          className="fixed left-0 right-0 mt-1 w-full bg-white shadow-lg z-50 border-t border-gray-200"
+          style={{ top: "60px" }}
           onMouseLeave={() => setIsOpen(false)}
         >
           <div className="container mx-auto px-4 py-6">

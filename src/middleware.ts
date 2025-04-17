@@ -1,9 +1,9 @@
-import { createServerClient } from '@supabase/ssr'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
+  const res = NextResponse.next();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,26 +14,52 @@ export async function middleware(req: NextRequest) {
           return req.cookies.getAll().map(({ name, value }) => ({
             name,
             value,
-          }))
+          }));
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            req.cookies.set(name, value)
-            res.cookies.set(name, value, options)
-          })
+            res.cookies.set(name, value, options);
+          });
         },
       },
-    }
-  )
+    },
+  );
 
   // Refresh session if expired - required for Server Components
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
 
-  if (error) {
-    // Auth session error handling without console.error
+  // Check if the request is for the admin area and user is not an admin
+  if (
+    req.nextUrl.pathname.startsWith("/admin") &&
+    req.nextUrl.pathname !== "/admin/login"
+  ) {
+    try {
+      // Only proceed with admin check if we have a session
+      if (session) {
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("user_type")
+          .eq("id", session.user.id)
+          .single();
+
+        // If not an admin, redirect to admin login
+        if (userError || (userData && userData.user_type !== "admin")) {
+          return NextResponse.redirect(new URL("/admin/login", req.url));
+        }
+      } else {
+        // No session, redirect to admin login
+        return NextResponse.redirect(new URL("/admin/login", req.url));
+      }
+    } catch (err) {
+      // In case of any error, redirect to admin login for safety
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
   }
 
-  return res
+  return res;
 }
 
 // Ensure the middleware is only called for relevant paths
@@ -45,8 +71,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public (public files)
-     * - api/polar/webhook (webhook endpoints)
+     * - api/payments/webhook (webhook endpoints)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public|api/payments/webhook).*)',
+    "/((?!_next/static|_next/image|favicon.ico|public|api/payments/webhook).*)",
   ],
-}
+};

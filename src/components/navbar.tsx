@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { ShoppingCart, Menu } from "lucide-react";
+import { ShoppingCart, Menu, User, ShoppingBag, Truck } from "lucide-react";
 import UserProfile from "./user-profile";
+import UserAuthDropdown from "./user-auth-dropdown";
 import { useEffect, useState } from "react";
 import { createClient } from "../../supabase/client";
 import { usePathname } from "next/navigation";
@@ -71,32 +72,7 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {!loading && (
-              <>
-                {user ? (
-                  <div className="flex items-center space-x-4">
-                    <Link href="/dashboard">
-                      <Button variant="outline" size="sm">
-                        Dashboard
-                      </Button>
-                    </Link>
-                    <UserProfile />
-                  </div>
-                ) : (
-                  <div className="hidden md:flex items-center space-x-4">
-                    <Link
-                      href="/sign-in"
-                      className="text-sm font-medium text-gray-700 hover:text-blue-600"
-                    >
-                      Sign In
-                    </Link>
-                    <Link href="/sign-up">
-                      <Button size="sm">Sign Up</Button>
-                    </Link>
-                  </div>
-                )}
-              </>
-            )}
+            {!loading && <>{user ? <UserProfile /> : <UserAuthDropdown />}</>}
 
             {/* Mobile menu button */}
             <button
@@ -159,17 +135,24 @@ export default function Navbar() {
                 <div className="flex flex-col space-y-2 pt-2 border-t">
                   <Link
                     href="/sign-in"
-                    className="text-sm font-medium px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md"
+                    className="text-sm font-medium px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md flex items-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Sign In
+                    <User className="mr-2 h-4 w-4" /> My Account
                   </Link>
                   <Link
-                    href="/sign-up"
-                    className="text-sm font-medium px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    href="/sign-in"
+                    className="text-sm font-medium px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md flex items-center"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Sign Up
+                    <ShoppingBag className="mr-2 h-4 w-4" /> My Orders
+                  </Link>
+                  <Link
+                    href="/sign-in"
+                    className="text-sm font-medium px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md flex items-center"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Truck className="mr-2 h-4 w-4" /> Track Orders
                   </Link>
                 </div>
               )}
