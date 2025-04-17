@@ -26,16 +26,26 @@ export async function middleware(req: NextRequest) {
   );
 
   // Refresh session if expired - required for Server Components
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
+  // Use try/catch to handle potential errors
+  let session = null;
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (!error && data) {
+      session = data.session;
+    }
+  } catch (err) {
+    console.error("Error getting session:", err);
+  }
 
   // Check if the request is for the admin area and user is not an admin
   if (
     req.nextUrl.pathname.startsWith("/admin") &&
-    req.nextUrl.pathname !== "/admin/login"
+    req.nextUrl.pathname !== "/admin/login" &&
+    req.nextUrl.pathname !== "/admin/signup"
   ) {
+    // Create a new response for redirects to avoid header issues
+    const redirectUrl = new URL("/admin/login", req.url);
+
     try {
       // Only proceed with admin check if we have a session
       if (session) {
@@ -47,15 +57,16 @@ export async function middleware(req: NextRequest) {
 
         // If not an admin, redirect to admin login
         if (userError || (userData && userData.user_type !== "admin")) {
-          return NextResponse.redirect(new URL("/admin/login", req.url));
+          return NextResponse.redirect(redirectUrl);
         }
       } else {
         // No session, redirect to admin login
-        return NextResponse.redirect(new URL("/admin/login", req.url));
+        return NextResponse.redirect(redirectUrl);
       }
     } catch (err) {
       // In case of any error, redirect to admin login for safety
-      return NextResponse.redirect(new URL("/admin/login", req.url));
+      console.error("Error checking admin status:", err);
+      return NextResponse.redirect(redirectUrl);
     }
   }
 
