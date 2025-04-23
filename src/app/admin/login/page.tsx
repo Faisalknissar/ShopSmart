@@ -15,7 +15,11 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const supabase = createClient();
+
+  // Create Supabase client with admin context
+  const supabase = createClient({
+    cookieOptions: { name: "sb-admin-auth" },
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +27,7 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      // Sign in with email and password
+      // Sign in with email and password using admin context
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
           email,
@@ -55,8 +59,8 @@ export default function AdminLogin() {
         throw new Error("You do not have admin privileges");
       }
 
-      // Redirect to admin dashboard
-      router.push("/admin");
+      // Redirect to admin dashboard with a hard redirect instead of router.push
+      window.location.href = "/admin";
     } catch (err: any) {
       setError(err.message || "An error occurred during login");
     } finally {

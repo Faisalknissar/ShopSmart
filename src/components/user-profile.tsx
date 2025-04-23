@@ -14,7 +14,16 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function UserProfile() {
-  const supabase = createClient();
+  // Determine if this is an admin context based on the current path
+  const isAdminContext =
+    typeof window !== "undefined" &&
+    window.location.pathname.startsWith("/admin");
+
+  // Create Supabase client with the appropriate cookie context
+  const cookieOptions = isAdminContext
+    ? { cookieOptions: { name: "sb-admin-auth" } }
+    : { cookieOptions: { name: "sb-user-auth" } };
+  const supabase = createClient(cookieOptions);
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 

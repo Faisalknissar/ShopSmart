@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { createClient } from "../../../../supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function AdminSignup() {
   const [fullName, setFullName] = useState("");
@@ -16,6 +18,12 @@ export default function AdminSignup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const router = useRouter();
+
+  // Create Supabase client with admin context
+  const supabase = createClient({
+    cookieOptions: { name: "sb-admin-auth" },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,23 +49,36 @@ export default function AdminSignup() {
     }
 
     try {
-      // Create form data
-      const formData = new FormData();
-      formData.append("email", email);
-      formData.append("password", password);
-      formData.append("full_name", fullName);
-      formData.append("phone", phone);
-      formData.append("user_type", "admin"); // Set user type as admin
-
-      // Submit the form
-      const response = await fetch("/sign-up", {
-        method: "POST",
-        body: formData,
+      // Sign up directly with Supabase client using admin context
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            email: email,
+            phone: phone,
+            user_type: "admin", // Set user type as admin
+          },
+        },
       });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to create admin account");
+      if (signUpError) throw signUpError;
+
+      if (data.user) {
+        // Insert user data into users table
+        const { error: insertError } = await supabase.from("users").insert({
+          id: data.user.id,
+          user_id: data.user.id,
+          name: fullName,
+          email: email,
+          phone: phone,
+          user_type: "admin",
+          token_identifier: data.user.id,
+          created_at: new Date().toISOString(),
+        });
+
+        if (insertError) throw insertError;
       }
 
       setSuccess(
@@ -69,6 +90,11 @@ export default function AdminSignup() {
       setPhone("");
       setPassword("");
       setConfirmPassword("");
+
+      // Redirect to admin login after a short delay
+      setTimeout(() => {
+        router.push("/admin/login");
+      }, 2000);
     } catch (err: any) {
       setError(err.message || "An error occurred during signup");
     } finally {

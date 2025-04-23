@@ -18,7 +18,10 @@ export default function Navbar() {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const supabase = createClient();
+      // Use user-specific cookie context for the navbar
+      const supabase = createClient({
+        cookieOptions: { name: "sb-user-auth" },
+      });
       const {
         data: { user },
       } = await supabase.auth.getUser();

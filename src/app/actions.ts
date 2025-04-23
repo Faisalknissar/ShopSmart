@@ -101,7 +101,12 @@ export const signInAction = async (formData: FormData) => {
   const useOtp = formData.get("useOtp") as string;
   const redirectTo = (formData.get("redirect") as string) || "/dashboard";
   const isAdminLogin = redirectTo.includes("/admin");
-  const supabase = await createClient();
+
+  // Create Supabase client with the appropriate cookie context
+  const cookieOptions = isAdminLogin
+    ? { cookieOptions: { name: "sb-admin-auth" } }
+    : { cookieOptions: { name: "sb-user-auth" } };
+  const supabase = await createClient(cookieOptions);
 
   // Check if identifier is an email or phone number
   const isEmail = identifier.includes("@");
@@ -301,10 +306,24 @@ export const resetPasswordAction = async (formData: FormData) => {
   encodedRedirect("success", "/protected/reset-password", "Password updated");
 };
 
-export const signOutAction = async () => {
-  const supabase = await createClient();
+export const signOutAction = async (formData?: FormData) => {
+  // Determine if this is an admin sign-out based on the redirect path or formData
+  const isAdminSignOut =
+    formData?.get("isAdmin") === "true" ||
+    (typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/admin"));
+
+  // Create Supabase client with the appropriate cookie context
+  const cookieOptions = isAdminSignOut
+    ? { cookieOptions: { name: "sb-admin-auth" } }
+    : { cookieOptions: { name: "sb-user-auth" } };
+  const supabase = await createClient(cookieOptions);
+
+  // Sign out the user from the specific context
   await supabase.auth.signOut();
-  return redirect("/sign-in");
+
+  // Redirect to the appropriate sign-in page
+  return redirect(isAdminSignOut ? "/admin/login" : "/sign-in");
 };
 
 export const checkUserSubscription = async (userId: string) => {

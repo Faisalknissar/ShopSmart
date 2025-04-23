@@ -26,7 +26,8 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push("/admin/login");
+    // Use window.location for a hard redirect instead of router.push
+    window.location.href = "/admin/login";
   };
 
   const navLinks = [
