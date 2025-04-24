@@ -25,7 +25,9 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
   const supabase = createClient();
 
   const handleSignOut = async () => {
+    console.log("Admin sign out initiated");
     await supabase.auth.signOut();
+    console.log("Sign out completed, redirecting to login page");
     // Use window.location for a hard redirect instead of router.push
     window.location.href = "/admin/login";
   };

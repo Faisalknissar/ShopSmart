@@ -18,14 +18,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
+      <head />
+      <body className={inter.className} suppressHydrationWarning>
         <Script
           src="https://api.tempo.new/proxy-asset?url=https://storage.googleapis.com/tempo-public-assets/error-handling.js"
           strategy="beforeInteractive"
         />
-      </head>
-      <body className={inter.className}>
         {children}
+        <div id="__next-build-watcher" style={{ display: "none" }} />
+        <div id="__next-root" />
         <TempoInit />
       </body>
     </html>

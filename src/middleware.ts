@@ -73,23 +73,34 @@ export async function middleware(req: NextRequest) {
     try {
       // Only proceed with admin check if we have a session
       if (session) {
+        console.log(
+          "Middleware: Admin route access attempt with session",
+          session.user.id,
+        );
+
         const { data: userData, error: userError } = await supabase
           .from("users")
           .select("user_type")
           .eq("id", session.user.id)
           .single();
 
+        console.log("Middleware: Admin check result:", { userData, userError });
+
         // If not an admin, redirect to admin login
         if (userError || (userData && userData.user_type !== "admin")) {
+          console.log("Middleware: Not an admin, redirecting to login");
           return NextResponse.redirect(redirectUrl);
         }
+
+        console.log("Middleware: Admin access granted");
       } else {
         // No session, redirect to admin login
+        console.log("Middleware: No session, redirecting to admin login");
         return NextResponse.redirect(redirectUrl);
       }
     } catch (err) {
       // In case of any error, redirect to admin login for safety
-      console.error("Error checking admin status:", err);
+      console.error("Middleware: Error checking admin status:", err);
       return NextResponse.redirect(redirectUrl);
     }
   }

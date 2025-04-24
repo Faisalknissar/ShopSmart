@@ -27,6 +27,8 @@ export default function AdminLogin() {
     setError("");
 
     try {
+      console.log("Login attempt with email:", email);
+
       // Sign in with email and password using admin context
       const { data, error: signInError } =
         await supabase.auth.signInWithPassword({
@@ -35,12 +37,16 @@ export default function AdminLogin() {
         });
 
       if (signInError) {
+        console.error("Sign in error:", signInError);
         throw signInError;
       }
 
       if (!data.user) {
+        console.error("No user returned from authentication");
         throw new Error("No user returned from authentication");
       }
+
+      console.log("User authenticated successfully, user ID:", data.user.id);
 
       // Check if the user is an admin
       const { data: userData, error: userError } = await supabase
@@ -49,21 +55,34 @@ export default function AdminLogin() {
         .eq("id", data.user.id)
         .single();
 
+      console.log("Admin check response:", userData, userError);
+
       if (userError) {
+        console.error("Error checking user type:", userError);
         throw userError;
       }
-      console.log("usertype", userData.user_type);
+
+      console.log("User type from database:", userData.user_type);
+
       if (userData.user_type !== "admin") {
+        console.log("User is not an admin, signing out");
         // Sign out the user if they're not an admin
         await supabase.auth.signOut();
         throw new Error("You do not have admin privileges");
       }
 
       // Redirect to admin dashboard
-      router.push("/admin");
+      console.log("Authentication successful, redirecting to admin dashboard");
+
+      // Force a small delay before redirect to ensure logs are visible
+      setTimeout(() => {
+        // Use window.location for a hard redirect instead of router.push
+        console.log("Executing redirect to /admin");
+        window.location.href = "/admin";
+      }, 500);
     } catch (err: any) {
+      console.error("Login error:", err);
       setError(err.message || "An error occurred during login");
-    } finally {
       setLoading(false);
     }
   };

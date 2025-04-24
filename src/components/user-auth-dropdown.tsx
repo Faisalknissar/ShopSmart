@@ -32,12 +32,12 @@ export default function UserAuthDropdown() {
       <DropdownMenuContent align="end" className="w-64">
         <div className="p-4 text-center">
           <h3 className="font-medium mb-2">Welcome to ShopSmart</h3>
-          <Link href="/sign-in">
+          <Link href="/(auth)/sign-in">
             <Button className="w-full mb-2" variant="default">
               <LogIn className="mr-2 h-4 w-4" /> Sign In
             </Button>
           </Link>
-          <Link href="/sign-up">
+          <Link href="/(auth)/sign-up">
             <Button className="w-full" variant="outline">
               <UserPlus className="mr-2 h-4 w-4" /> Create Account
             </Button>
