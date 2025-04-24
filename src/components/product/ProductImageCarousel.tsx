@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -20,11 +20,18 @@ export default function ProductImageCarousel({
   images,
   onImageClick,
 }: ProductImageCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [isClient, setIsClient] = useState(false);
+  const [emblaRef, emblaApi] =
+    isClient && useEmblaCarousel ? useEmblaCarousel({ loop: true }) : [];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [showZoom, setShowZoom] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
+
+  // Set isClient to true once component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();
@@ -59,9 +66,12 @@ export default function ProductImageCarousel({
   };
 
   // Register onSelect event
-  if (emblaApi && !emblaApi.hasRegisteredCallback("select", onSelect)) {
+  useEffect(() => {
+    if (!emblaApi) return;
+
     emblaApi.on("select", onSelect);
-  }
+    return () => emblaApi.off("select", onSelect);
+  }, [emblaApi, onSelect]);
 
   if (!images || images.length === 0) {
     return (
