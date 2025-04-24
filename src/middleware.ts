@@ -13,7 +13,8 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.pathname === "/admin/login" ||
     req.nextUrl.pathname === "/admin/signup";
   const isUserAuthRoute =
-    req.nextUrl.pathname === "/sign-in" || req.nextUrl.pathname === "/sign-up";
+    req.nextUrl.pathname === "/(auth)/sign-in" ||
+    req.nextUrl.pathname === "/(auth)/sign-up";
 
   // Create Supabase client with the appropriate cookie context
   const cookiePrefix = isAdminRoute ? ADMIN_AUTH_COOKIE : USER_AUTH_COOKIE;

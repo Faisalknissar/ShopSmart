@@ -20,11 +20,18 @@ export default function ProductImageCarousel({
   images,
   onImageClick,
 }: ProductImageCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const [isClient, setIsClient] = useState(false);
+  const [emblaRef, emblaApi] =
+    isClient && useEmblaCarousel ? useEmblaCarousel({ loop: true }) : [];
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [showZoom, setShowZoom] = useState(false);
   const imageRef = useRef<HTMLDivElement>(null);
+
+  // Set isClient to true once component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const scrollPrev = useCallback(() => {
     if (emblaApi) emblaApi.scrollPrev();

@@ -51,22 +51,22 @@ export default function UserAuthDropdown() {
             YOUR ACCOUNT
           </h4>
           <DropdownMenuItem asChild>
-            <Link href="/sign-in" className="cursor-pointer">
+            <Link href="/(auth)/sign-in" className="cursor-pointer">
               <User className="mr-2 h-4 w-4" /> My Account
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/sign-in" className="cursor-pointer">
+            <Link href="/(auth)/sign-in" className="cursor-pointer">
               <ShoppingBag className="mr-2 h-4 w-4" /> My Orders
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/sign-in" className="cursor-pointer">
+            <Link href="/(auth)/sign-in" className="cursor-pointer">
               <Truck className="mr-2 h-4 w-4" /> Track Orders
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link href="/sign-in" className="cursor-pointer">
+            <Link href="/(auth)/sign-in" className="cursor-pointer">
               <Package className="mr-2 h-4 w-4" /> My Wishlist
             </Link>
           </DropdownMenuItem>

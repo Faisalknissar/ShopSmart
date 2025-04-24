@@ -52,15 +52,15 @@ export default function AdminLogin() {
       if (userError) {
         throw userError;
       }
-
+      console.log("usertype", userData.user_type);
       if (userData.user_type !== "admin") {
         // Sign out the user if they're not an admin
         await supabase.auth.signOut();
         throw new Error("You do not have admin privileges");
       }
 
-      // Redirect to admin dashboard with a hard redirect instead of router.push
-      window.location.href = "/admin";
+      // Redirect to admin dashboard
+      router.push("/admin");
     } catch (err: any) {
       setError(err.message || "An error occurred during login");
     } finally {

@@ -89,7 +89,7 @@ export const signUpAction = async (formData: FormData) => {
   // Redirect to appropriate page based on user type
   return encodedRedirect(
     "success",
-    isAdminSignup ? "/admin/login" : "/sign-up",
+    isAdminSignup ? "/admin/login" : "/sign-in",
     "Thanks for signing up! Please check your email for a verification link.",
   );
 };

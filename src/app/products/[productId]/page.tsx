@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
-import ProductImageCarousel from "@/components/product/ProductImageCarousel";
-import ProductImageLightbox from "@/components/product/ProductImageLightbox";
-import ReviewModal from "@/components/product/ReviewModal";
 import { Button } from "@/components/ui/button";
 import {
   ShoppingCart,
@@ -15,6 +13,21 @@ import {
   ThumbsUp,
   ThumbsDown,
 } from "lucide-react";
+
+// Dynamically import components with client-side only rendering
+const ProductImageCarousel = dynamic(
+  () => import("@/components/product/ProductImageCarousel"),
+  { ssr: false },
+);
+
+const ProductImageLightbox = dynamic(
+  () => import("@/components/product/ProductImageLightbox"),
+  { ssr: false },
+);
+
+const ReviewModal = dynamic(() => import("@/components/product/ReviewModal"), {
+  ssr: false,
+});
 
 // Mock product data - in a real app, this would come from your database
 const mockProducts = [
