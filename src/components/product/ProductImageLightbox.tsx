@@ -25,9 +25,11 @@ export default function ProductImageLightbox({
   onOpenChange,
 }: ProductImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [mounted, setMounted] = useState(false);
 
-  // Reset current index when initialIndex changes
+  // Set mounted state and reset current index when component mounts
   useEffect(() => {
+    setMounted(true);
     setCurrentIndex(initialIndex);
   }, [initialIndex]);
 
@@ -61,7 +63,7 @@ export default function ProductImageLightbox({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onOpenChange]);
 
-  if (!images || images.length === 0) return null;
+  if (!mounted || !images || images.length === 0) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -77,8 +79,8 @@ export default function ProductImageLightbox({
         <div className="relative h-[80vh] w-full flex items-center justify-center">
           <div className="relative h-full w-full">
             <Image
-              src={images[currentIndex].url}
-              alt={images[currentIndex].alt}
+              src={images[currentIndex]?.url || ""}
+              alt={images[currentIndex]?.alt || "Product image"}
               fill
               className="object-contain"
               sizes="100vw"

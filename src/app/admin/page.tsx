@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Edit, Trash2, Plus } from "lucide-react";
 
 export default function AdminDashboard() {
+  console.log("Admin dashboard component rendered");
   const [products, setProducts] = useState([
     {
       id: 1,

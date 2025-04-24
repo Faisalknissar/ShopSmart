@@ -13,20 +13,45 @@ const nextConfig = {
   },
   // Disable webpack persistent caching and handle chunk loading errors
   webpack: (config, { dev }) => {
-    if (dev) {
-      config.cache = false;
+    // Disable cache for both dev and prod to prevent chunk loading issues
+    config.cache = false;
 
-      // Add chunk loading error handling
-      config.output = {
-        ...config.output,
-        chunkLoadingGlobal: "webpackChunkLoad",
-        crossOriginLoading: "anonymous",
-      };
-    }
+    // Add chunk loading error handling
+    config.output = {
+      ...config.output,
+      chunkLoadingGlobal: "webpackChunkLoad",
+      crossOriginLoading: "anonymous",
+    };
+
+    // Add error handling for JSON parsing
+    config.optimization = {
+      ...config.optimization,
+      runtimeChunk: "single",
+      splitChunks: {
+        chunks: "all",
+        maxInitialRequests: Infinity,
+        minSize: 0,
+        cacheGroups: {
+          vendor: {
+            test: /[\\]node_modules[\\]/,
+            name(module) {
+              const packageName = module.context.match(
+                /[\\]node_modules[\\](.+?)([\\]|$)/,
+              )[1];
+              return `npm.${packageName.replace("@", "")}`;
+            },
+          },
+        },
+      },
+    };
+
     return config;
   },
   // Add output option to fix bootstrap script error
   output: "standalone",
+  // Ensure proper script loading
+  reactStrictMode: true,
+  poweredByHeader: false,
 };
 
 if (process.env.NEXT_PUBLIC_TEMPO) {
