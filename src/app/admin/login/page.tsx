@@ -74,12 +74,8 @@ export default function AdminLogin() {
       // Redirect to admin dashboard
       console.log("Authentication successful, redirecting to admin dashboard");
 
-      // Force a small delay before redirect to ensure logs are visible
-      setTimeout(() => {
-        // Use window.location for a hard redirect instead of router.push
-        console.log("Executing redirect to /admin");
-        window.location.href = "/admin";
-      }, 500);
+      // Use window.location for a hard redirect
+      window.location.href = "/admin/dashboard";
     } catch (err: any) {
       console.error("Login error:", err);
       setError(err.message || "An error occurred during login");

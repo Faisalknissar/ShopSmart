@@ -66,7 +66,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Admin routes protection
-  if (isAdminRoute && !isAdminAuthRoute) {
+  if (isAdminRoute && !isAdminAuthRoute && req.nextUrl.pathname !== "/admin") {
     // Create a new response for redirects to avoid header issues
     const redirectUrl = new URL("/admin/login", req.url);
 
