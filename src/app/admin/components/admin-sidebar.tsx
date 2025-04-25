@@ -28,13 +28,13 @@ export default function AdminSidebar({ activePage }: AdminSidebarProps) {
     console.log("Admin sign out initiated");
     await supabase.auth.signOut();
     console.log("Sign out completed, redirecting to login page");
-    // Use window.location for a hard redirect instead of router.push
+    // Use window.location for a hard redirect
     window.location.href = "/admin/login";
   };
 
   const navLinks = [
     {
-      href: "/admin",
+      href: "/admin/dashboard",
       label: "Products",
       icon: <Package size={18} />,
       id: "products",
